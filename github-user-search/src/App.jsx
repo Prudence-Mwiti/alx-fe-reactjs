@@ -1,9 +1,10 @@
-import "./App.css";
+// src/App.jsx
+import React from "react";
 import Search from "./components/Search";
 
 function App() {
   return (
-    <div>
+    <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
       <h1>GitHub User Search</h1>
       <Search />
     </div>
@@ -11,6 +12,9 @@ function App() {
 }
 
 export default App;
+
+
+
 
 
 

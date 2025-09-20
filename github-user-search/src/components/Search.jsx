@@ -1,54 +1,71 @@
-import { useState } from "react";
-import fetchUserData from "../services/githubService";
+import React, { useState } from "react";
 
-const Search = () => {
+function Search() {
   const [username, setUsername] = useState("");
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    if (!username) return;
-    setLoading(true);
-    setError(null);
-    setUser(null);
+
+    if (!username.trim()) return;
 
     try {
-      const data = await fetchUserData(username);
-      setUser(data);
+      const response = await fetch(`https://api.github.com/users/${username}`);
+      if (response.status === 404) {
+        setUserData(null);
+        setError("Looks like we cant find the user");
+      } else {
+        const data = await response.json();
+        setUserData(data);
+        setError("");
+      }
     } catch (err) {
-      setError("Looks like we can’t find the user");
-    } finally {
-      setLoading(false);
+      console.error("Error fetching user:", err);
+      setError("Looks like we cant find the user");
+      setUserData(null);
     }
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className="search-container">
+      <form onSubmit={handleSearch}>
         <input
           type="text"
-          placeholder="Enter GitHub username"
+          placeholder="Search GitHub username..."
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
         <button type="submit">Search</button>
       </form>
 
-      {loading && <p>Loading...</p>}
-      {error && <p>{error}</p>}
-      {user && (
-        <div>
-          <img src={user.avatar_url} alt={user.login} width="100" />
-          <h3>{user.login}</h3>
-          <a href={user.html_url} target="_blank" rel="noreferrer">
+      {/* Error Message */}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {/* User Info */}
+      {userData && (
+        <div className="user-card">
+          <img
+            src={userData.avatar_url}
+            alt={userData.login}
+            width="120"
+            height="120"
+          />
+          <h2>{userData.name || userData.login}</h2>
+          <p>{userData.bio || "No bio available"}</p>
+          <p>
+            <strong>Followers:</strong> {userData.followers} |{" "}
+            <strong>Following:</strong> {userData.following}
+          </p>
+          <a href={userData.html_url} target="_blank" rel="noreferrer">
             View Profile
           </a>
         </div>
       )}
     </div>
   );
-};
+}
 
 export default Search;
+
+
